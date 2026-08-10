@@ -1,0 +1,104 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+import Header from '../components/Header.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+
+const posts = (await getCollection('blog')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+
+const postsByYear = posts.reduce<{ year: number; posts: typeof posts }[]>((groups, post) => {
+	const year = post.data.pubDate.getFullYear();
+	const lastGroup = groups.at(-1);
+	if (lastGroup && lastGroup.year === year) {
+		lastGroup.posts.push(post);
+	} else {
+		groups.push({ year, posts: [post] });
+	}
+	return groups;
+}, []);
+---
+
+<!doctype html>
+<html lang="zh-Hans">
+	<head>
+		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+		<style>
+			main {
+				width: 720px;
+				max-width: calc(100% - 2em);
+				margin: 0 auto;
+			}
+			.year {
+				margin: 2em 0 0.5em;
+				padding-top: 1.5em;
+				border-top: 1px solid rgb(var(--gray-light));
+				color: rgb(var(--black));
+				font-size: 1.75rem;
+				font-weight: 700;
+				text-align: center;
+			}
+			section:first-of-type .year {
+				margin-top: 0;
+				padding-top: 0;
+				border-top: none;
+			}
+			ul {
+				list-style-type: none;
+				margin: 0;
+				padding: 0;
+			}
+			ul li {
+				border-bottom: 1px solid rgb(var(--gray-light));
+				padding: 1em 0;
+			}
+			ul li a {
+				text-decoration: none;
+				display: flex;
+				justify-content: space-between;
+				align-items: baseline;
+				gap: 1em;
+			}
+			ul li a .title {
+				color: rgb(var(--black));
+				font-size: 1.1rem;
+			}
+			ul li a .date {
+				color: rgb(var(--gray));
+				white-space: nowrap;
+				font-size: 0.9rem;
+			}
+			ul li a:hover .title {
+				color: rgb(var(--black));
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			{
+				postsByYear.map(({ year, posts }) => (
+					<section>
+						<h2 class="year">{year}</h2>
+						<ul>
+							{posts.map((post) => (
+								<li>
+									<a href={`/blog/${post.id}/`}>
+										<span class="title">{post.data.title}</span>
+										<span class="date">
+											<FormattedDate date={post.data.pubDate} />
+										</span>
+									</a>
+								</li>
+							))}
+						</ul>
+					</section>
+				))
+			}
+		</main>
+		<Footer />
+	</body>
+</html>
