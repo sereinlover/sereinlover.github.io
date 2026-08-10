@@ -1,0 +1,163 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+import Header from '../components/Header.astro';
+
+type Heading = { depth: number; slug: string; text: string };
+
+type Props = Pick<
+	CollectionEntry<'blog'>['data'],
+	'title' | 'description' | 'pubDate' | 'updatedDate' | 'heroImage'
+> & { hideMeta?: boolean; headings?: Heading[] };
+
+const { title, description, pubDate, heroImage, hideMeta = false, headings = [] } = Astro.props;
+
+const tocHeadings = headings;
+const minDepth = tocHeadings.length > 0 ? Math.min(...tocHeadings.map((h) => h.depth)) : 1;
+---
+
+<html lang="zh-Hans">
+	<head>
+		<BaseHead title={title} description={description} />
+		<style>
+			main {
+				width: calc(100% - 2em);
+				max-width: 1240px;
+				margin: 0 auto;
+			}
+			.hero-image {
+				width: 100%;
+			}
+			.hero-image img {
+				display: block;
+				margin: 0 auto;
+				border-radius: 12px;
+				box-shadow: var(--box-shadow);
+			}
+			.layout {
+				display: flex;
+				align-items: flex-start;
+				justify-content: center;
+				gap: 3em;
+			}
+			.prose {
+				width: 900px;
+				max-width: calc(100% - 2em);
+				padding: 1em;
+				color: rgb(var(--gray-dark));
+			}
+			.title {
+				margin-bottom: 1em;
+				padding: 1em 0;
+				text-align: center;
+				line-height: 1;
+			}
+			.title h1 {
+				margin: 0 0 0.5em 0;
+			}
+			.date {
+				margin-bottom: 0;
+				color: rgb(var(--gray));
+			}
+			.prose :global(img) {
+				display: block;
+				margin: 1.5em auto;
+			}
+			.prose :global(pre) {
+				border: 1px solid rgb(var(--gray-light));
+			}
+			.toc {
+				width: 220px;
+				flex-shrink: 0;
+				position: sticky;
+				top: 2em;
+				max-height: calc(100vh - 4em);
+				overflow-y: auto;
+				padding-left: 1em;
+				border-left: 1px solid rgb(var(--gray-light));
+				font-size: 0.9em;
+			}
+			.toc-title {
+				margin: 0 0 0.75em 0;
+				font-weight: 700;
+				font-size: 0.8em;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+				color: rgb(var(--gray));
+			}
+			.toc ul {
+				list-style: none;
+				margin: 0;
+				padding: 0;
+			}
+			.toc li {
+				margin: 0.5em 0;
+				line-height: 1.4;
+			}
+			.toc li.toc-top > a {
+				font-weight: 600;
+				color: rgb(var(--gray-dark));
+			}
+			.toc a {
+				color: rgb(var(--gray));
+				text-decoration: none;
+			}
+			.toc a:hover {
+				color: rgb(var(--black));
+			}
+			@media (max-width: 1100px) {
+				.toc {
+					display: none;
+				}
+			}
+		</style>
+	</head>
+
+	<body>
+		<Header />
+		<main>
+			<article>
+				<div class="hero-image">
+					{heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
+				</div>
+				<div class="layout">
+					{
+						tocHeadings.length > 0 && (
+							<aside class="toc">
+								<p class="toc-title">目录</p>
+								<ul>
+									{tocHeadings.map((h) => (
+										<li
+											class:list={[{ 'toc-top': h.depth === minDepth }]}
+											style={`padding-left:${(h.depth - minDepth) * 1}em`}
+										>
+											<a href={`#${h.slug}`}>{h.text}</a>
+										</li>
+									))}
+								</ul>
+							</aside>
+						)
+					}
+					<div class="prose">
+						{
+							!hideMeta && (
+								<div class="title">
+									<h1>{title}</h1>
+									<div class="date">
+										<FormattedDate date={pubDate} />
+									</div>
+									<hr />
+								</div>
+							)
+						}
+						<slot />
+					</div>
+				</div>
+			</article>
+		</main>
+		<Footer />
+	</body>
+</html>
