@@ -1,0 +1,216 @@
+---
+import { Image } from 'astro:assets';
+import AboutHeroImage from '../assets/face.jpg';
+import Layout from '../layouts/BlogPost.astro';
+
+const facts = [
+	'本科专业光电工程，硕士专业生物医学工程',
+	'除了喜欢编程开发，也喜欢打网球和弹钢琴',
+	'自学计算机，多年后端开发和软件开发经验',
+	'爱生活爱美食，自学拿到三级公共营养师证',
+	'互联网、外企、人工智能公司多年工作经验',
+	'热爱音乐科技，愿以此作为未来人生的志业',
+	'曾跨行短暂体验过量化研究和计算社会科学',
+	'好奇不止，创造不息，持续学习，长期主义',
+];
+
+const projects = [
+	{ name: 'ComputableBeauty', href: 'https://github.com/sereinlover/computable-beauty', status: '已上线' },
+	{ name: 'LingyiPiano', href: 'https://github.com/sereinlover/lingyi-piano', status: '开发中' },
+	{ name: 'TexSlide', href: 'https://texslide.com', status: '已上线(合作)' },
+];
+
+const contacts = [
+	{ label: 'GitHub', value: 'sereinlover', href: 'https://github.com/sereinlover' },
+	{ label: 'Email', value: 'shanglin@zju.edu.cn', href: 'mailto:shanglin@zju.edu.cn' },
+];
+---
+
+<Layout
+	title="About"
+	description="Serein 的个人简介与联系方式"
+	pubDate={new Date('2019-10-21')}
+	hideMeta
+>
+	<div class="avatar">
+		<Image width={160} height={160} src={AboutHeroImage} alt="Serein" />
+	</div>
+	<h1 class="name">Serein</h1>
+
+	<section class="card card-wide">
+		<h2>个人简介</h2>
+		<ul class="facts">
+			{facts.map((fact) => <li>{fact}</li>)}
+		</ul>
+	</section>
+
+	<div class="cards">
+		<section class="card">
+			<h2>创造产品</h2>
+			<ul class="items items-row">
+				{
+					projects.map((project) => (
+						<li>
+							{project.href ? (
+								<a href={project.href} target="_blank" rel="noreferrer">
+									<span class="item-name">{project.name}</span>
+									<span class="badge badge-live">{project.status}</span>
+								</a>
+							) : (
+								<span class="item-static">
+									<span class="item-name">{project.name}</span>
+									<span class="badge">{project.status}</span>
+								</span>
+							)}
+						</li>
+					))
+				}
+			</ul>
+		</section>
+
+		<section class="card">
+			<h2>联系方式</h2>
+			<ul class="items">
+				{
+					contacts.map((contact) => (
+						<li>
+							<a href={contact.href} target="_blank" rel="noreferrer">
+								<span class="item-label">{contact.label}</span>
+								<span class="item-name">{contact.value}</span>
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		</section>
+	</div>
+</Layout>
+
+<style>
+	:global(main) {
+		max-width: 1400px;
+	}
+	:global(.prose) {
+		width: 1400px;
+		max-width: calc(100% - 2em);
+	}
+	.avatar {
+		display: flex;
+		justify-content: center;
+		margin-bottom: 1em;
+	}
+	.avatar :global(img) {
+		width: 160px;
+		height: 160px;
+		border-radius: 50%;
+		object-fit: cover;
+		box-shadow: var(--box-shadow);
+	}
+	.name {
+		text-align: center;
+		font-size: 1.5em;
+		margin-bottom: 2em;
+	}
+	.cards {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 1.25em;
+	}
+	@media (max-width: 720px) {
+		.cards {
+			grid-template-columns: 1fr;
+		}
+	}
+	.card {
+		border: 1px solid rgb(var(--gray-light));
+		border-radius: 12px;
+		padding: 1.5em;
+		background: #fff;
+	}
+	.card-wide {
+		margin-bottom: 1.25em;
+	}
+	.card-wide .facts {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.5em 3em;
+	}
+	@media (max-width: 720px) {
+		.card-wide .facts {
+			grid-template-columns: 1fr;
+		}
+	}
+	h2 {
+		text-align: center;
+		font-size: 1.1em;
+		padding-bottom: 0.6em;
+		margin-bottom: 1em;
+		border-bottom: 1px solid rgb(var(--gray-light));
+	}
+	.facts {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+	.facts li {
+		margin-bottom: 0.7em;
+		line-height: 1.5;
+		font-size: 0.85em;
+		white-space: nowrap;
+	}
+	.facts li:last-child {
+		margin-bottom: 0;
+	}
+	.items {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+	.items li {
+		border-bottom: 1px solid rgb(var(--gray-light));
+	}
+	.items li:last-child {
+		border-bottom: none;
+	}
+	.items a,
+	.items .item-static {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35em;
+		padding: 0.75em 0.2em;
+		text-decoration: none;
+		border-radius: 6px;
+	}
+	.items a:hover {
+		background: rgb(var(--pink-light));
+	}
+	.items-row a,
+	.items-row .item-static {
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+	}
+	.item-label {
+		color: rgb(var(--gray));
+		font-size: 0.8em;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+	.item-name {
+		color: rgb(var(--black));
+		font-weight: 600;
+	}
+	.badge {
+		display: inline-block;
+		width: fit-content;
+		padding: 0.2em 0.6em;
+		border-radius: 999px;
+		background: rgb(var(--gray-light));
+		color: rgb(var(--gray-dark));
+		font-size: 0.75em;
+		font-weight: 500;
+	}
+	.badge-live {
+		background: rgb(var(--pink-light));
+	}
+</style>
