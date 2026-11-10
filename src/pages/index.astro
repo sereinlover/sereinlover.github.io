@@ -34,8 +34,6 @@ const postsByYear = posts.reduce<{ year: number; posts: typeof posts }[]>((group
 			}
 			.year {
 				margin: 2em 0 0.5em;
-				padding-top: 1.5em;
-				border-top: 1px solid rgb(var(--gray-light));
 				color: rgb(var(--black));
 				font-size: 1.75rem;
 				font-weight: 700;
@@ -43,8 +41,6 @@ const postsByYear = posts.reduce<{ year: number; posts: typeof posts }[]>((group
 			}
 			section:first-of-type .year {
 				margin-top: 0;
-				padding-top: 0;
-				border-top: none;
 			}
 			ul {
 				list-style-type: none;

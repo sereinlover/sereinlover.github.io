@@ -5,6 +5,7 @@ import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
+import { SITE_DESCRIPTION } from '../consts';
 
 type Heading = { depth: number; slug: string; text: string };
 
@@ -21,7 +22,7 @@ const minDepth = tocHeadings.length > 0 ? Math.min(...tocHeadings.map((h) => h.d
 
 <html lang="zh-Hans">
 	<head>
-		<BaseHead title={title} description={description} />
+		<BaseHead title={title} description={description ?? SITE_DESCRIPTION} />
 		<style>
 			main {
 				width: calc(100% - 2em);
@@ -66,6 +67,51 @@ const minDepth = tocHeadings.length > 0 ? Math.min(...tocHeadings.map((h) => h.d
 				display: block;
 				margin: 1.5em auto;
 			}
+			/* 文章正文的标题样式；About 等 hideMeta 页面有自己的样式，不套用 */
+			.article :global(:is(h1, h2, h3, h4, h5, h6)) {
+				margin: 1.8rem 0 0.5rem 0;
+				color: rgb(51, 65, 85);
+				font-weight: 600;
+			}
+			.article :global(h1) {
+				font-size: 1.7em;
+			}
+			.article :global(h2) {
+				font-size: 1.525em;
+			}
+			.article :global(h3) {
+				font-size: 1.3em;
+			}
+			.article :global(h4) {
+				font-size: 1.125em;
+			}
+			.article .title h1 {
+				font-size: 2em;
+			}
+			.article :global(:is(h1, h2, h3, h4, h5, h6):first-child) {
+				margin-top: 0;
+			}
+			.prose :global(table) {
+				border-collapse: collapse;
+				margin: 1em 0 1.5em;
+				font-size: 0.95em;
+			}
+			.prose :global(:is(th, td)) {
+				border: 1px solid rgb(var(--gray-light));
+				padding: 0.4em 0.75em;
+			}
+			.prose :global(th) {
+				background: rgb(248, 250, 252);
+				text-align: left;
+			}
+			.prose :global(img.obsidian-image) {
+				max-width: min(640px, 100%);
+			}
+			.prose :global(.mermaid) {
+				margin: 1.5em 0;
+				overflow-x: auto;
+				text-align: center;
+			}
 			.prose :global(pre) {
 				border: 1px solid rgb(var(--gray-light));
 			}
@@ -79,14 +125,6 @@ const minDepth = tocHeadings.length > 0 ? Math.min(...tocHeadings.map((h) => h.d
 				padding-left: 1em;
 				border-left: 1px solid rgb(var(--gray-light));
 				font-size: 0.9em;
-			}
-			.toc-title {
-				margin: 0 0 0.75em 0;
-				font-weight: 700;
-				font-size: 0.8em;
-				letter-spacing: 0.08em;
-				text-transform: uppercase;
-				color: rgb(var(--gray));
 			}
 			.toc ul {
 				list-style: none;
@@ -127,7 +165,6 @@ const minDepth = tocHeadings.length > 0 ? Math.min(...tocHeadings.map((h) => h.d
 					{
 						tocHeadings.length > 0 && (
 							<aside class="toc">
-								<p class="toc-title">目录</p>
 								<ul>
 									{tocHeadings.map((h) => (
 										<li
@@ -141,7 +178,7 @@ const minDepth = tocHeadings.length > 0 ? Math.min(...tocHeadings.map((h) => h.d
 							</aside>
 						)
 					}
-					<div class="prose">
+					<div class:list={['prose', { article: !hideMeta }]}>
 						{
 							!hideMeta && (
 								<div class="title">
@@ -159,5 +196,28 @@ const minDepth = tocHeadings.length > 0 ? Math.min(...tocHeadings.map((h) => h.d
 			</article>
 		</main>
 		<Footer />
+		<script>
+			// 只有页面里有 mermaid 代码块时才按需加载 mermaid
+			const blocks = document.querySelectorAll('.prose pre > code.language-mermaid');
+			if (blocks.length > 0) {
+				const nodes = Array.from(blocks).map((code) => {
+					const div = document.createElement('div');
+					div.className = 'mermaid';
+					div.textContent = code.textContent ?? '';
+					code.parentElement!.replaceWith(div);
+					return div;
+				});
+				import('mermaid').then(({ default: mermaid }) => {
+					mermaid.initialize({ startOnLoad: false });
+					mermaid.run({ nodes }).then(() => {
+						// 按原始尺寸缩到 80%，超出正文宽度时仍由 width: 100% 自适应
+						for (const svg of document.querySelectorAll<SVGSVGElement>('.prose .mermaid svg')) {
+							const width = svg.viewBox.baseVal.width;
+							if (width) svg.style.maxWidth = `${width * 0.8}px`;
+						}
+					});
+				});
+			}
+		</script>
 	</body>
 </html>
