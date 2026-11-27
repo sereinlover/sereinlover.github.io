@@ -5,7 +5,6 @@ pubDate: "2021-06-05T15:57:11.013Z"
 updatedDate: "2021-06-12T15:43:16.691Z"
 tags: 
   - "操作系统"
-  - "Linux I/O"
 categories: 
   - "计算机"
 ---

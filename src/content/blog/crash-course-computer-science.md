@@ -4,7 +4,7 @@ description: "安利一个最近一个多月看完的YouTube Crash Course出品�
 pubDate: "2021-07-03T02:43:36.901Z"
 updatedDate: "2021-07-03T03:48:00.168Z"
 tags: 
-  - "Golang"
+  - "学习资源"
 categories: 
   - "计算机"
 ---

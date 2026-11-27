@@ -1,0 +1,87 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import FormattedDate from './FormattedDate.astro';
+
+interface Props {
+	posts: CollectionEntry<'blog'>[];
+}
+
+const posts = [...Astro.props.posts].sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+
+const postsByYear = new Map<number, typeof posts>();
+for (const post of posts) {
+	const year = post.data.pubDate.getFullYear();
+	const group = postsByYear.get(year);
+	if (group) group.push(post);
+	else postsByYear.set(year, [post]);
+}
+---
+
+<div class="post-list">
+	{Array.from(postsByYear, ([year, posts]) => (
+		<section>
+			<h2>{year}</h2>
+			<ul>
+				{posts.map((post) => (
+					<li>
+						<a href={`/blog/${post.id}/`}>
+							<span class="title">{post.data.title}</span>
+							<span class="date"><FormattedDate date={post.data.pubDate} /></span>
+						</a>
+					</li>
+				))}
+			</ul>
+		</section>
+	))}
+</div>
+
+<style>
+	h2 {
+		margin: 0 0 0.5em;
+		color: var(--post-muted-color);
+		font-size: var(--post-list-year-size);
+		font-weight: 650;
+		font-variant-numeric: tabular-nums;
+		letter-spacing: 0.04em;
+		text-align: center;
+	}
+	section + section {
+		margin-top: 1.25rem;
+		padding-top: 1.25rem;
+		border-top: 1px solid rgb(var(--gray-light));
+	}
+	ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+	li {
+		padding: var(--post-list-row-padding) 0;
+	}
+	a {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 1em;
+		text-decoration: none;
+	}
+	.title {
+		color: #4c677e;
+		font-size: 1.1rem;
+		font-weight: 400;
+		line-height: 1.5;
+	}
+	a:is(:hover, :focus-visible) .title {
+		text-decoration: underline;
+		text-decoration-thickness: 1px;
+		text-underline-offset: 0.2em;
+	}
+	.date {
+		color: var(--post-muted-color);
+		white-space: nowrap;
+		font-size: 0.85rem;
+		font-variant-numeric: tabular-nums;
+	}
+</style>

@@ -1,0 +1,44 @@
+---
+import { getCollection } from 'astro:content';
+import { groupPostsByTopic, topicKinds, type TopicKind } from '../../blog-topics';
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import Header from '../../components/Header.astro';
+import PostList from '../../components/PostList.astro';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../../consts';
+
+export async function getStaticPaths() {
+	const posts = await getCollection('blog');
+	return (Object.keys(topicKinds) as TopicKind[]).flatMap((kind) =>
+		groupPostsByTopic(posts, kind).map(({ name, slug, posts }) => ({
+			params: { kind, topic: slug },
+			props: { name, posts },
+		})),
+	);
+}
+
+const { name, posts } = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-Hans">
+	<head>
+		<BaseHead title={`${name} | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<a href="/">← Blog</a>
+			<h1>{name}</h1>
+			<PostList posts={posts} />
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	h1 {
+		font-size: 2rem;
+		margin: 0.75em 0 1em;
+	}
+</style>

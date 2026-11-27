@@ -1,0 +1,177 @@
+---
+import { Image } from 'astro:assets';
+import portrait from '../assets/face.jpg';
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+
+type Entry = { title: string; date?: string; detail: string };
+type Section = { id: string; title: string; entries: Entry[] };
+
+const profileLinks = [
+	{ label: 'GitHub', href: 'https://github.com/sereinlover' },
+	{ label: 'Email', href: 'mailto:shanglin@zju.edu.cn' },
+];
+
+// 每节预留一条示例。补充简历时可以直接替换或追加 entries。
+const sections: Section[] = [
+	{
+		id: 'education',
+		title: '教育背景',
+		entries: [{ title: '学校 · 学位', date: '起止时间', detail: '专业、院系' }],
+	},
+	{
+		id: 'experience',
+		title: '工作经历',
+		entries: [{ title: '公司 · 职位', date: '起止时间', detail: '团队、职责与代表性成果' }],
+	},
+	{
+		id: 'internships',
+		title: '实习经历',
+		entries: [{ title: '机构 · 实习岗位', date: '起止时间', detail: '团队、参与项目与个人贡献' }],
+	},
+	{
+		id: 'research',
+		title: '研究经历',
+		entries: [{ title: '机构 · 研究方向', date: '起止时间', detail: '课题、合作对象与研究工作' }],
+	},
+	{
+		id: 'projects',
+		title: '个人项目',
+		entries: [{ title: '项目名称', detail: '项目简介、个人贡献与项目链接' }],
+	},
+	{
+		id: 'skills',
+		title: '专业技能',
+		entries: [{ title: '技能类别', detail: '技术栈、语言能力或资格证书' }],
+	},
+];
+---
+
+<!doctype html>
+<html lang="zh-Hans">
+	<head>
+		<BaseHead title="Serein · CV" description="Serein 的个人简历" />
+	</head>
+	<body>
+		<Header />
+		<main class="cv">
+			<aside class="profile" aria-labelledby="cv-name">
+				<Image src={portrait} width={112} height={112} alt="Serein" />
+				<div class="profile-details">
+					<h1 id="cv-name">Serein</h1>
+					<p>软件开发·后端开发·全栈开发·音乐科技</p>
+					<p>CS Pre-Ph.D. in Music Tech.</p>
+					<ul class="profile-links" aria-label="个人链接">
+						{profileLinks.map(({ label, href }) => <li><a href={href}>{label}</a></li>)}
+					</ul>
+				</div>
+			</aside>
+
+			<div class="cv-content">
+				<nav aria-label="简历目录">
+					<ul>
+						{sections.map(({ id, title }) => <li><a href={`#${id}`}>{title}</a></li>)}
+					</ul>
+				</nav>
+
+				{sections.map(({ id, title, entries }) => (
+					<section aria-labelledby={id}>
+						<h2 id={id}>{title}</h2>
+						{entries.map(({ title, date, detail }) => (
+							<div class="entry">
+								<div class="entry-heading">
+									<h3>{title}</h3>
+									{date && <span>{date}</span>}
+								</div>
+								<p>{detail}</p>
+							</div>
+						))}
+					</section>
+				))}
+			</div>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	.cv {
+		width: 960px;
+		display: grid;
+		grid-template-columns: clamp(5rem, 25vw, 11rem) minmax(0, 1fr);
+		align-items: start;
+		gap: clamp(0.9rem, 5vw, 3.5rem);
+	}
+	.profile {
+		position: sticky;
+		top: 2rem;
+		display: grid;
+		gap: 0.85rem;
+	}
+	.profile img {
+		width: clamp(4rem, 16vw, 7rem);
+		height: auto;
+		aspect-ratio: 1;
+		object-fit: cover;
+		border-radius: 50%;
+	}
+	h1, h2, h3 {
+		color: var(--post-title-color);
+	}
+	h1 {
+		font-size: clamp(1.25rem, 3.5vw, 1.85rem);
+		font-weight: var(--post-title-weight);
+		margin: 0 0 0.3rem;
+	}
+	h2 {
+		font-size: 1.15rem;
+		margin: 0 0 0.65rem;
+		scroll-margin-top: 1.25rem;
+	}
+	h3 {
+		font-size: 1rem;
+		font-weight: var(--post-title-weight);
+		margin: 0;
+	}
+	p {
+		margin: 0;
+	}
+	nav {
+		margin-bottom: 1.25rem;
+	}
+	nav ul, .entry-heading {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0.25rem 1rem;
+	}
+	nav ul, .profile-links {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		font-size: 0.85rem;
+	}
+	.profile-links {
+		display: grid;
+		gap: 0.25rem;
+		margin-top: 0.65rem;
+	}
+	nav a, .profile-links a {
+		color: var(--post-link-color);
+	}
+	section {
+		padding: 1.15rem 0;
+		border-top: 1px solid rgb(var(--gray-light));
+	}
+	.entry + .entry {
+		margin-top: 0.8rem;
+	}
+	.entry-heading {
+		justify-content: space-between;
+	}
+	.profile-details p, .entry p, .entry-heading span {
+		color: var(--post-muted-color);
+		font-size: 0.9rem;
+	}
+</style>

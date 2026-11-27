@@ -2,6 +2,7 @@
 import 'katex/dist/katex.min.css';
 import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
+import { topicKinds, type TopicKind, type TopicLink } from '../blog-topics';
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import FormattedDate from '../components/FormattedDate.astro';
@@ -13,9 +14,10 @@ type Heading = { depth: number; slug: string; text: string };
 type Props = Pick<
 	CollectionEntry<'blog'>['data'],
 	'title' | 'description' | 'pubDate' | 'updatedDate' | 'heroImage'
-> & { hideMeta?: boolean; headings?: Heading[] };
+> & { hideMeta?: boolean; headings?: Heading[]; topics?: Record<TopicKind, TopicLink[]> };
 
-const { title, description, pubDate, heroImage, hideMeta = false, headings = [] } = Astro.props;
+const { title, description, pubDate, heroImage, hideMeta = false, headings = [], topics } = Astro.props;
+const visibleTopics = (Object.keys(topicKinds) as TopicKind[]).filter((kind) => topics?.[kind].length);
 
 const tocHeadings = headings;
 const minDepth = tocHeadings.length > 0 ? Math.min(...tocHeadings.map((h) => h.depth)) : 1;
@@ -51,18 +53,54 @@ const minDepth = tocHeadings.length > 0 ? Math.min(...tocHeadings.map((h) => h.d
 				padding: 1em;
 				color: rgb(var(--gray-dark));
 			}
+			.prose.article {
+				font-size: 0.97em;
+			}
+			.back-to-top {
+				position: fixed;
+				right: max(1rem, env(safe-area-inset-right));
+				bottom: max(1rem, env(safe-area-inset-bottom));
+				z-index: 2;
+				padding: 0.25em 0.65em;
+				color: var(--post-link-color);
+				font-size: 0.8rem;
+				text-decoration: none;
+			}
+			.back-to-top:is(:hover, :focus-visible) {
+				text-decoration: underline;
+			}
 			.title {
 				margin-bottom: 1em;
 				padding: 1em 0;
 				text-align: center;
 				line-height: 1;
 			}
-			.title h1 {
-				margin: 0 0 0.5em 0;
-			}
 			.date {
 				margin-bottom: 0;
-				color: rgb(var(--gray));
+				color: var(--post-muted-color);
+			}
+			.post-meta,
+			.post-topics,
+			.topic-group {
+				display: flex;
+				flex-wrap: wrap;
+				align-items: center;
+				justify-content: center;
+			}
+			.post-meta,
+			.post-topics {
+				gap: 0.5em 1em;
+			}
+			.post-meta {
+				line-height: 1.5;
+				font-size: 0.8rem;
+			}
+			.topic-group {
+				gap: 0.5em;
+			}
+			.topic-group a {
+				color: var(--topic-text);
+				text-decoration-color: currentColor;
 			}
 			.prose :global(img) {
 				display: block;
@@ -70,24 +108,41 @@ const minDepth = tocHeadings.length > 0 ? Math.min(...tocHeadings.map((h) => h.d
 			}
 			/* 文章正文的标题样式；About 等 hideMeta 页面有自己的样式，不套用 */
 			.article :global(:is(h1, h2, h3, h4, h5, h6)) {
-				margin: 1.8rem 0 0.5rem 0;
-				color: rgb(51, 65, 85);
+				margin: 1.5rem 0 0.55rem;
+				color: var(--post-title-color);
 				font-weight: 600;
+				line-height: 1.4;
+				scroll-margin-top: 1.5rem;
 			}
 			.article :global(h1) {
-				font-size: 1.7em;
+				margin-top: 2.5rem;
+				font-size: clamp(1.45rem, 3vw, 1.8rem);
+				font-weight: var(--post-title-weight);
+				line-height: 1.3;
+				text-align: start;
 			}
 			.article :global(h2) {
-				font-size: 1.525em;
+				margin-top: 2.25rem;
+				padding-inline-start: 0.65rem;
+				border-inline-start: 2px solid currentColor;
+				font-size: 1.35rem;
 			}
 			.article :global(h3) {
-				font-size: 1.3em;
+				margin-top: 1.85rem;
+				font-size: 1.2rem;
 			}
 			.article :global(h4) {
-				font-size: 1.125em;
+				font-size: 1.075rem;
+			}
+			.article :global(h5) {
+				font-size: 1rem;
+			}
+			.article :global(h6) {
+				font-size: 0.925rem;
 			}
 			.article .title h1 {
-				font-size: 2em;
+				margin: 0 0 0.5em;
+				text-align: center;
 			}
 			.article :global(:is(h1, h2, h3, h4, h5, h6):first-child) {
 				margin-top: 0;
@@ -146,7 +201,7 @@ const minDepth = tocHeadings.length > 0 ? Math.min(...tocHeadings.map((h) => h.d
 				overflow-y: auto;
 				padding-left: 1em;
 				border-left: 1px solid rgb(var(--gray-light));
-				font-size: 0.9em;
+				font-size: 0.82rem;
 			}
 			.toc ul {
 				list-style: none;
@@ -154,19 +209,22 @@ const minDepth = tocHeadings.length > 0 ? Math.min(...tocHeadings.map((h) => h.d
 				padding: 0;
 			}
 			.toc li {
-				margin: 0.5em 0;
-				line-height: 1.4;
+				margin: 0.4em 0;
+				line-height: 1.5;
+			}
+			.toc li.toc-top:not(:first-child) {
+				margin-top: 0.85em;
 			}
 			.toc li.toc-top > a {
-				font-weight: 600;
-				color: rgb(var(--gray-dark));
+				font-weight: var(--post-title-weight);
 			}
 			.toc a {
-				color: rgb(var(--gray));
+				color: var(--post-link-color);
 				text-decoration: none;
 			}
-			.toc a:hover {
-				color: rgb(var(--black));
+			.toc li > a:is(:hover, :focus-visible) {
+				text-decoration: underline;
+				text-underline-offset: 0.2em;
 			}
 			@media (max-width: 1100px) {
 				.toc {
@@ -176,7 +234,7 @@ const minDepth = tocHeadings.length > 0 ? Math.min(...tocHeadings.map((h) => h.d
 		</style>
 	</head>
 
-	<body>
+	<body id="blog-page-top">
 		<Header />
 		<main>
 			<article>
@@ -205,8 +263,17 @@ const minDepth = tocHeadings.length > 0 ? Math.min(...tocHeadings.map((h) => h.d
 							!hideMeta && (
 								<div class="title">
 									<h1>{title}</h1>
-									<div class="date">
-										<FormattedDate date={pubDate} />
+									<div class="post-meta">
+										<div class="date"><FormattedDate date={pubDate} /></div>
+										{topics && visibleTopics.length > 0 && (
+											<nav class="post-topics" aria-label="文章标签和分类">
+												{visibleTopics.map((kind) => (
+													<div class="topic-group" data-topic-kind={kind} role="group" aria-label={topicKinds[kind]}>
+														{topics[kind].map(({ name, href }) => <a href={href}>{name}</a>)}
+													</div>
+												))}
+											</nav>
+										)}
 									</div>
 									<hr />
 								</div>
@@ -218,6 +285,9 @@ const minDepth = tocHeadings.length > 0 ? Math.min(...tocHeadings.map((h) => h.d
 			</article>
 		</main>
 		<Footer />
+		{!hideMeta && (
+			<a class="back-to-top" href="#blog-page-top">返回顶部 <span aria-hidden="true">↑</span></a>
+		)}
 		<script>
 			// 只有页面里有 mermaid 代码块时才按需加载 mermaid
 			const blocks = document.querySelectorAll('.prose pre > code.language-mermaid');

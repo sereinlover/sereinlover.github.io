@@ -8,23 +8,74 @@ import { obsidianImageSignature } from './plugins/remark-obsidian-image.mjs';
 // 从 Obsidian 原样复制过来、没有 frontmatter 的文章，在这里补日期和标签。
 // key 是文件相对 src/content/blog/ 的路径，不含扩展名，如 '音乐美学计算平台/01_第 1 章 绪论'。
 // title 可选，不填时取正文第一个 `# ` 标题。
-const rawPosts: Record<
+const rawPosts = new Map<
 	string,
 	{ title?: string; pubDate: string; tags?: string[]; categories?: string[] }
-> = {
-	'音乐美学计算平台/01_第 1 章 绪论': {
-		title: '音乐美学计算平台——第 1 章 绪论',
-		pubDate: '2026-11-21',
-		tags: ['音乐美学计算平台'],
-		categories: ['音乐科技'],
-	},
-	'音乐美学计算平台/02_第 2 章 预备知识':{
-		title: '音乐美学计算平台——第 2 章 预备知识',
-		pubDate: '2026-11-22',
-		tags: ['音乐美学计算平台'],
-		categories: ['音乐科技'],
-	},
-};
+>([
+	[
+		'音乐美学计算平台/01_第 1 章 绪论',
+		{
+			title: '音乐美学计算平台——第 1 章 绪论',
+			pubDate: '2026-11-21',
+			tags: ['音乐美学计算平台'],
+			categories: ['音乐科技'],
+		},
+	],
+	[
+		'音乐美学计算平台/02_第 2 章 预备知识',
+		{
+			title: '音乐美学计算平台——第 2 章 预备知识',
+			pubDate: '2026-11-22',
+			tags: ['音乐美学计算平台'],
+			categories: ['音乐科技'],
+		},
+	],
+	[
+		'音乐美学计算平台/03_第 3 章 L1 声学特征层',
+		{
+			title: '音乐美学计算平台——第 3 章 L1 声学特征层',
+			pubDate: '2026-11-23',
+			tags: ['音乐美学计算平台'],
+			categories: ['音乐科技'],
+		},
+	],
+	[
+		'音乐美学计算平台/04_第 4 章 L2 音乐理解层',
+		{
+			title: '音乐美学计算平台——第 4 章 L2 音乐理解层',
+			pubDate: '2026-11-24',
+			tags: ['音乐美学计算平台'],
+			categories: ['音乐科技'],
+		},
+	],
+	[
+		'音乐美学计算平台/05_第 5 章 L3 美学评分层',
+		{
+			title: '音乐美学计算平台——第 5 章 L3 美学评分层',
+			pubDate: '2026-11-25',
+			tags: ['音乐美学计算平台'],
+			categories: ['音乐科技'],
+		},
+	],
+	[
+		'音乐美学计算平台/06_第 6 章 L4 AI 解读层',
+		{
+			title: '音乐美学计算平台——第 6 章 L4 AI 解读层',
+			pubDate: '2026-11-26',
+			tags: ['音乐美学计算平台'],
+			categories: ['音乐科技'],
+		},
+	],
+	[
+		'音乐美学计算平台/07_第 7 章 总结与展望',
+		{
+			title: '音乐美学计算平台——第 7 章 总结与展望',
+			pubDate: '2026-11-27',
+			tags: ['音乐美学计算平台'],
+			categories: ['音乐科技'],
+		},
+	],
+]);
 
 // 包一层 glob loader：没有 frontmatter 的文章，用 rawPosts 和正文 H1 补齐数据
 const BLOG_DIR = './src/content/blog';
@@ -48,7 +99,7 @@ function blogLoader(): Loader {
 							.split(sep)
 							.join('/')
 							.replace(/\.mdx?$/, '');
-						const meta = rawPosts[key];
+						const meta = rawPosts.get(key);
 						if (!meta) {
 							throw new Error(
 								`${props.filePath} 没有 frontmatter，请在 src/content.config.ts 的 rawPosts 里添加 '${key}'`,

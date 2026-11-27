@@ -1,20 +1,28 @@
 ---
 import { type CollectionEntry, getCollection, render } from 'astro:content';
+import { groupPostsByTopic, topicHref, topicKinds, type TopicKind, type TopicLink } from '../../blog-topics';
 import BlogPost from '../../layouts/BlogPost.astro';
 
 export async function getStaticPaths() {
 	const posts = await getCollection('blog');
+	const postTopics = new Map(posts.map((post) => [post.id, { tags: [], categories: [] } as Props['topics']]));
+	for (const kind of Object.keys(topicKinds) as TopicKind[]) {
+		for (const { name, slug, posts: matchingPosts } of groupPostsByTopic(posts, kind)) {
+			const link = { name, href: topicHref(kind, slug) };
+			for (const post of matchingPosts) postTopics.get(post.id)![kind].push(link);
+		}
+	}
 	return posts.map((post) => ({
 		params: { slug: post.id },
-		props: post,
+		props: { post, topics: postTopics.get(post.id)! },
 	}));
 }
-type Props = CollectionEntry<'blog'>;
+type Props = { post: CollectionEntry<'blog'>; topics: Record<TopicKind, TopicLink[]> };
 
-const post = Astro.props;
+const { post, topics } = Astro.props;
 const { Content, headings } = await render(post);
 ---
 
-<BlogPost {...post.data} headings={headings}>
+<BlogPost {...post.data} headings={headings} topics={topics}>
 	<Content />
 </BlogPost>

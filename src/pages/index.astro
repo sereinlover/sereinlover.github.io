@@ -1,100 +1,88 @@
 ---
 import { getCollection } from 'astro:content';
+import { groupPostsByTopic, topicHref, topicKinds, type TopicKind } from '../blog-topics';
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
-import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
+import PostList from '../components/PostList.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 
-const posts = (await getCollection('blog')).sort(
-	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
-);
-
-const postsByYear = posts.reduce<{ year: number; posts: typeof posts }[]>((groups, post) => {
-	const year = post.data.pubDate.getFullYear();
-	const lastGroup = groups.at(-1);
-	if (lastGroup && lastGroup.year === year) {
-		lastGroup.posts.push(post);
-	} else {
-		groups.push({ year, posts: [post] });
-	}
-	return groups;
-}, []);
+const posts = await getCollection('blog');
+const topicLists = (Object.keys(topicKinds) as TopicKind[]).map((kind) => ({
+	kind,
+	label: topicKinds[kind],
+	topics: groupPostsByTopic(posts, kind),
+}));
 ---
 
 <!doctype html>
 <html lang="zh-Hans">
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-		<style>
-			main {
-				width: 720px;
-				max-width: calc(100% - 2em);
-				margin: 0 auto;
-			}
-			.year {
-				margin: 2em 0 0.5em;
-				color: rgb(var(--black));
-				font-size: 1.75rem;
-				font-weight: 700;
-				text-align: center;
-			}
-			section:first-of-type .year {
-				margin-top: 0;
-			}
-			ul {
-				list-style-type: none;
-				margin: 0;
-				padding: 0;
-			}
-			ul li {
-				border-bottom: 1px solid rgb(var(--gray-light));
-				padding: 1em 0;
-			}
-			ul li a {
-				text-decoration: none;
-				display: flex;
-				justify-content: space-between;
-				align-items: baseline;
-				gap: 1em;
-			}
-			ul li a .title {
-				color: rgb(var(--black));
-				font-size: 1.1rem;
-			}
-			ul li a .date {
-				color: rgb(var(--gray));
-				white-space: nowrap;
-				font-size: 0.9rem;
-			}
-			ul li a:hover .title {
-				color: rgb(var(--black));
-			}
-		</style>
 	</head>
 	<body>
 		<Header />
-		<main>
-			{
-				postsByYear.map(({ year, posts }) => (
-					<section>
-						<h2 class="year">{year}</h2>
+		<main class="blog-layout">
+			<nav class="topics" aria-label="按主题浏览文章">
+				{topicLists.filter(({ topics }) => topics.length > 0).map(({ kind, label, topics }) => (
+					<section data-topic-kind={kind} aria-labelledby={`${kind}-heading`}>
+						<h2 id={`${kind}-heading`}>{label}</h2>
 						<ul>
-							{posts.map((post) => (
-								<li>
-									<a href={`/blog/${post.id}/`}>
-										<span class="title">{post.data.title}</span>
-										<span class="date">
-											<FormattedDate date={post.data.pubDate} />
-										</span>
-									</a>
-								</li>
+							{topics.map(({ name, slug }) => (
+								<li><a class="topic-link" href={topicHref(kind, slug)}>{name}</a></li>
 							))}
 						</ul>
 					</section>
-				))
-			}
+				))}
+			</nav>
+			<PostList posts={posts} />
 		</main>
 		<Footer />
 	</body>
 </html>
+
+<style>
+	.blog-layout {
+		--blog-width: 1080px;
+		width: var(--blog-width);
+		display: grid;
+		grid-template-columns: clamp(5.5rem, 28vw, 10.5rem) minmax(0, 1fr);
+		align-items: start;
+		gap: clamp(0.75rem, 4vw, 2rem);
+	}
+	.topics {
+		--topics-heading-size: 0.85rem;
+		--topics-heading-gap: 0.5rem;
+		display: grid;
+		gap: 1rem;
+		/* 对齐首排标签和首篇文章，扣除侧栏标题所占高度。 */
+		margin-block-start: calc(
+			1.7 * var(--post-list-year-size) + var(--post-list-row-padding)
+			- 1.2 * var(--topics-heading-size) - var(--topics-heading-gap)
+		);
+		margin-inline-start: clamp(-1.5rem, (var(--blog-width) + 4rem - 100vw) / 2, 0px);
+		padding-inline-end: 1rem;
+		border-inline-end: 1px solid rgb(var(--gray-light));
+	}
+	.topics h2 {
+		margin: 0 0 var(--topics-heading-gap);
+		color: var(--topic-text);
+		font-size: var(--topics-heading-size);
+	}
+	.topics ul {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	@media (max-width: 760px) {
+		.topics {
+			padding-inline-end: 0.5rem;
+		}
+		.topics a {
+			padding-inline: 0.4rem;
+		}
+	}
+</style>

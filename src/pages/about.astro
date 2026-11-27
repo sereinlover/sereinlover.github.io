@@ -9,9 +9,9 @@ const facts = [
 	'自学计算机，多年后端开发和软件开发经验',
 	'爱生活爱美食，自学拿到三级公共营养师证',
 	'互联网、外企、人工智能公司多年工作经验',
-	'热爱音乐科技，愿以此作为未来人生的志业',
-	'曾跨行短暂体验过量化研究和计算社会科学',
-	'好奇不止，创造不息，持续学习，长期主义',
+	'热爱音乐科技和音乐治疗，以此为人生志业',
+	'曾跨行短暂体验过金融量化和计算社会科学',
+	'偶像是奥利弗萨克斯，祈祷不要失去这颗心',
 ];
 
 const projects = [
@@ -152,10 +152,16 @@ const contacts = [
 		margin: 0;
 		padding: 0;
 	}
-	.facts li {
-		margin-bottom: 0.7em;
+	.facts li,
+	.item-label,
+	.item-name,
+	.badge {
 		line-height: 1.5;
 		font-size: 0.85em;
+		font-weight: 400;
+	}
+	.facts li {
+		margin-bottom: 0.7em;
 		white-space: nowrap;
 	}
 	.facts li:last-child {
@@ -192,13 +198,6 @@ const contacts = [
 	}
 	.item-label {
 		color: rgb(var(--gray));
-		font-size: 0.8em;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-	}
-	.item-name {
-		color: rgb(var(--black));
-		font-weight: 600;
 	}
 	.badge {
 		display: inline-block;
@@ -207,8 +206,6 @@ const contacts = [
 		border-radius: 999px;
 		background: rgb(var(--gray-light));
 		color: rgb(var(--gray-dark));
-		font-size: 0.75em;
-		font-weight: 500;
 	}
 	.badge-live {
 		background: rgb(var(--pink-light));
